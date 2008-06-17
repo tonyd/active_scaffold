@@ -50,14 +50,15 @@ else
   # This hooks into edge rails as of revision 8804 (desparately need the new polymorphic eagerloading from edge)
   class ActionView::TemplateFinder
     def pick_template_with_generic_paths(template_path, extension)
-      path = pick_template_without_generic_paths(template_path, extension)
-      if path && !path.empty?
-        path
-      else
+      if @template.controller.class.uses_active_scaffold?
+        path = pick_template_without_generic_paths(template_path, extension)
+        return path if (path && ! path.empty?)
         template_file = File.basename(template_path)
         template_path = find_generic_base_path_for(template_file, extension)
         # ACC return absolute path to file
         template_path
+      else
+        pick_template_without_generic_paths(template_path, extension)
       end
     end
     alias_method_chain :pick_template, :generic_paths
