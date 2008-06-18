@@ -3,17 +3,20 @@ module ActionController #:nodoc:
   class Base
     def render_with_active_scaffold(*args, &block)
       # ACC I'm never seeing this params[:adapter] value being passed in, only args[0][:action]
-      if self.class.uses_active_scaffold? and ( params[:adapter] || args[0][:action] ) and @rendering_adapter.nil?
+      options = args.find {|a| a.is_a?(Hash) } || {}
+      if self.class.uses_active_scaffold? and ( params[:adapter] || options[:action] ) and @rendering_adapter.nil?
         @rendering_adapter = true # recursion control
         # if we need an adapter, then we render the actual stuff to a string and insert it into the adapter template
-        path_val = params[:adapter] || args[0][:action]
+        path_val = params[:adapter] || options[:action]
         # ACC I'm setting use_full_path to false here and rewrite_template_path_for_active_scaffold has been
         # modified to return an absolute path
-        show_layout = args[0][:partial] ? false : true
-        render :file => rewrite_template_path_for_active_scaffold(path_val),
-               :locals => {:payload => render_to_string(args.first, &block)},
-               :use_full_path => false,
-               :layout => show_layout
+        show_layout = options.has_key?(:layout) ? options[:layout] : (options[:partial] ? false : true)
+        render_without_active_scaffold(
+          :file          => rewrite_template_path_for_active_scaffold(path_val),
+          :locals        => {:payload => render_to_string(options.merge(:layout => false), &block)},
+          :use_full_path => false,
+          :layout        => show_layout
+        )
         @rendering_adapter = nil # recursion control
       else
         render_without_active_scaffold(*args, &block)
