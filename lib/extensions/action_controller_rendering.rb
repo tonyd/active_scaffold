@@ -24,19 +24,6 @@ module ActionController #:nodoc:
     end
     alias_method_chain :render, :active_scaffold unless method_defined?(:render_without_active_scaffold)
 
-    # Rails 1.2.x
-    if method_defined? :render_action
-      def render_action_with_active_scaffold(action_name, status = nil, with_layout = true) #:nodoc:
-        if self.class.uses_active_scaffold?
-          path = rewrite_template_path_for_active_scaffold(action_name)
-          return render(:template => path, :layout => with_layout, :status => status) if path != action_name
-        end
-        return render_action_without_active_scaffold(action_name, status, with_layout)
-      end
-      alias_method_chain :render_action, :active_scaffold unless method_defined?(:render_action_without_active_scaffold)
-    end
-    # Rails 2.x implementation is post-initialization on :active_scaffold method
-
     private
 
     def rewrite_template_path_for_active_scaffold(path)
