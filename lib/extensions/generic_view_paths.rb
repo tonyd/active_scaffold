@@ -13,9 +13,8 @@ class ActionController::Base
   self.generic_view_paths = []
 end
 
-# find_full_template_path is no longer around in edge rails. Replaced with the TemplateFinder class (leading
-# to much headache)
-if ActionView::Base.method_defined? :find_full_template_path
+# #find_full_template_path was refactored into the TemplateFinder Class in Rails 2.1
+if ActionView::Base.private_instance_methods.include?("find_full_template_path") # RAILS 2.0
   class ActionView::Base
     private
     def find_full_template_path_with_generic_paths(template_path, extension)
@@ -43,8 +42,7 @@ if ActionView::Base.method_defined? :find_full_template_path
       controller.respond_to?(:generic_view_paths) and controller.class.action_methods.include?(controller.action_name)
     end
   end
-else
-  # This hooks into edge rails as of revision 8804 (desparately need the new polymorphic eagerloading from edge)
+else # RAILS 2.1
   class ActionView::TemplateFinder
     def pick_template_with_generic_paths(template_path, extension)
       if @template.controller.class.uses_active_scaffold?
