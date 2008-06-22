@@ -70,6 +70,12 @@ module ActionView #:nodoc:
     end
     alias_method_chain :render_partial, :active_scaffold unless method_defined?(:render_partial_without_active_scaffold)
 
+    def template_format
+      #return @template_format if @template_format  <-- I COMMENTED THIS OUT
+      format = controller && controller.respond_to?(:request) && controller.request.parameters[:format]
+      @template_format = format.blank? ? :html : format.to_sym
+    end
+        
     private
 
     # FIXME hack, this has been removed in edge rails

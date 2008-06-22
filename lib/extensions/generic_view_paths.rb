@@ -1,4 +1,4 @@
-# The view_paths functionality in Edge Rails (Rails 2.0) doesn't support
+# The view_paths functionality in Rails 2.0.x doesn't support
 # the idea of a fallback generic template file, such as what make ActiveScaffold
 # work. This patch adds generic_view_paths, which are folders containing templates
 # that may apply to all controllers.
@@ -7,9 +7,6 @@
 # *not* be used unless the action has been explicitly defined in the controller.
 # This is in contrast to how Rails will normally bypass the controller if it sees
 # a partial.
-
-# if render_action exists, we can use our existing hooks.
-unless ActionController::Base.method_defined? :render_action
 
 class ActionController::Base
   class_inheritable_accessor :generic_view_paths
@@ -83,5 +80,4 @@ else
     end
     alias_method_chain :find_template_extension_from_handler, :generics
   end
-end
 end
