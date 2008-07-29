@@ -74,8 +74,11 @@ module ActiveScaffold
               record
 
             elsif column.plural_association?
-              collection = value.collect do |key_value_pair|
-                hash = key_value_pair[1]
+              # Sort by keys so that new association records (which have monotonically
+              # increasing temporary IDs) redisplay in the same order in case
+              # there is a validation error.
+              collection = value.keys.sort.collect do |key|
+                hash = value[key]
                 record = find_or_create_for_params(hash, column.association.klass, parent_record.send("#{column.name}"))
                 if record
                   record_columns = active_scaffold_config_for(column.association.klass).subform.columns
