@@ -30,8 +30,14 @@ module ActiveScaffold
       ## Uncategorized
       ##
 
+      @@last_temporary_id = 0;
+
       def generate_temporary_id
-        (Time.now.to_f*1000).to_i.to_s
+        id = (Time.now.to_f*1000).to_i
+        # Ensure that we never give out the same ID twice.
+        id += 1 if (@@last_temporary_id == id)
+        @@last_temporary_id = id
+        id.to_s
       end
 
       # Turns [[label, value]] into <option> tags
