@@ -9,6 +9,9 @@ module ActiveScaffold
       include ActiveScaffold::Helpers::ListColumns
       include ActiveScaffold::Helpers::FormColumns
 
+      # Actions for which the ID should be dropped.
+      COLLECTION_ACTIONS = [ 'list', 'index', 'new' ]
+      
       ##
       ## Delegates
       ##
@@ -122,12 +125,18 @@ module ActiveScaffold
         # and wow. no we don't want to propagate :record.
         # :commit is a special rails variable for form buttons
         blacklist = [:adapter, :position, :sort, :sort_direction, :page, :record, :commit, :_method]
+
         unless @params_for
           @params_for = params.clone.delete_if { |key, value| blacklist.include? key.to_sym if key }
           @params_for[:controller] = '/' + @params_for[:controller] unless @params_for[:controller].first(1) == '/' # for namespaced controllers
+
           @params_for.delete(:id) if @params_for[:id].nil?
         end
-        @params_for.merge(options)
+        new_params = @params_for.merge(options)
+        
+        new_params.delete(:id) if COLLECTION_ACTIONS.include?(new_params[:action])
+        
+        new_params
       end
 
       # Creates a javascript-based link that toggles the visibility of some element on the page.
@@ -147,6 +156,8 @@ module ActiveScaffold
         url_options[:controller] = link.controller if link.controller
         url_options.delete(:search) if link.controller and link.controller.to_s != params[:controller]
         url_options.merge! link.parameters if link.parameters
+
+        url_options.delete(:id) if COLLECTION_ACTIONS.include?(url_options[:action])
 
         html_options = {:class => link.action}
         if link.inline?
